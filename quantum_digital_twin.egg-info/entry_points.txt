@@ -1,0 +1,2 @@
+[console_scripts]
+qdt-sim = simulator.simulate:run_with_twin

@@ -1,0 +1,9 @@
+Metadata-Version: 2.1
+Name: quantum-digital-twin
+Version: 0.1.0
+Summary: Calibration-driven digital twin for noisy quantum computers
+Home-page: https://github.com/sozoluffy/Toward_Quantum_Digital_Twins
+Author: Soronzonbold Otgonbaatar
+Author-email: you@example.com
+Requires-Python: >=3.8
+License-File: LICENSE

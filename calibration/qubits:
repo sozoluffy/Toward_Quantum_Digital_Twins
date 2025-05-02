@@ -1,0 +1,25 @@
+qubits:
+  '0':
+    p1: 0.01
+    T1: 50e-6
+    T2: 70e-6
+  '1':
+    p1: 0.015
+    T1: 45e-6
+    T2: 60e-6
+
+gates:
+  u3_0:
+    fidelity: 0.999
+  u3_1:
+    fidelity: 0.998
+  cx_0_1:
+    fidelity: 0.985
+
+readout:
+  '0':
+    confusion_matrix_diag: [0.98, 0.97]
+  '1':
+    confusion_matrix_diag: [0.975, 0.965]
+
+crosstalk_strength: 5e6

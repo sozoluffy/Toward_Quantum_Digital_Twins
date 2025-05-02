@@ -1,0 +1,54 @@
+# Synthetic Calibration Data (example for 5 qubits, star topology 0-2, 1-2, 3-2, 4-2)
+# Units: time in seconds (s), frequency in Hertz (Hz)
+dt: 0.2222222222222222e-9 # Or your assumed dt
+basis_gates: ['u3', 'rz', 'cz', 'id', 'reset', 'measure']
+
+qubits:
+    '0': { T1: 40e-6, T2: 20e-6, p1: 0.04}  # Relaxation, Dephasing, Initial |1> population
+    '1': { T1: 42e-6, T2: 18e-6, p1: 0.05}
+    '2': { T1: 35e-6, T2: 15e-6, p1: 0.03}  # Center qubit
+    '3': { T1: 45e-6, T2: 21e-6, p1: 0.045}
+    '4': { T1: 32e-6, T2: 14e-6, p1: 0.06}  # Lower coherence, higher p1
+
+gates:
+    # Single-Qubit Gates (Specify per type OR per qubit if needed)
+    # Using generic u3/rz definition here assuming Rx, Ry derived from u3
+    u3:      { fidelity: 0.997, duration: 32e-9} # Avg fidelity for Rx(pi/2), Ry(pi/2) etc.
+    rz:      { fidelity: 1.0, duration: 0.0}   # Virtual gate
+    id:      { fidelity: 1.0, duration: 32e-9} # Identity gate duration (placeholder, use for scheduling)
+    reset:   { fidelity: 1.0, duration: 50e-9} # Duration of reset operation
+    measure: { fidelity: 1.0, duration: 1500e-9} # Measurement duration
+
+    # Two-Qubit Gates (Specify per pair - FIDELITIES TO BE FITTED LATER)
+    # Provide initial guess or placeholder fidelity. Duration is fixed.
+    cz_0_2:  { fidelity: 0.93117909, duration: 45e-9} # Initial guess for fidelity
+    cz_1_2:  { fidelity: 0.96594110, duration: 45e-9}
+    cz_3_2:  { fidelity: 0.96308300, duration: 45e-9}
+    cz_4_2:  { fidelity: 0.93, duration: 45e-9} # Lower fidelity guess
+
+readout:
+    # Qubit Readout Errors [P(0|0), P(1|1)]
+    '0': { confusion_matrix_diag: [0.97,0.96] }
+    '1': { confusion_matrix_diag: [0.98,0.95] }
+    '2': { confusion_matrix_diag: [0.96,0.94] }
+    '3': { confusion_matrix_diag: [0.975,0.965] }
+    '4': { confusion_matrix_diag: [0.92,0.90] } # Higher readout error (as per paper note)
+
+# Crosstalk Strength (ZZ interaction J - TO BE FITTED LATER)
+# Provide initial guess in Hz.
+crosstalk_strength_hz: 12837.11290735 # Initial guess: 10 kHz
+coupling_map: [[0, 2], [1, 2], [2, 3], [2,4]] # 
+
+# Optional: Qubit frequencies and anharmonicities if needed for calculating beta manually
+# frequencies_hz:
+#   '0': 4.5e9
+#   '1': 4.8e9
+#   '2': 5.0e9
+#   '3': 5.2e9
+#   '4': 5.5e9
+# anharmonicities_hz:
+#   '0': -200e6
+#   '1': -210e6
+#   '2': -190e6
+#   '3': -205e6
+#   '4': -215e6
