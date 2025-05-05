@@ -1,86 +1,53 @@
-# .github/workflows/ci.yml
-
-name: CI
+name: Python CI
 
 on:
   push:
     branches:
-      - main # Or your default branch name like 'master'
+      - main # or your main branch name like 'master'
+    paths: # Only run CI if relevant files change (optional)
+      - '**.py'
+      - '**.yaml'
+      - 'requirements.txt'
+      - 'setup.py'
+      - '.github/workflows/ci.yml'
   pull_request:
     branches:
-      - main # Or your default branch name like 'master'
+      - main # or your main branch name like 'master'
+    paths: # Only run CI if relevant files change (optional)
+      - '**.py'
+      - '**.yaml'
+      - 'requirements.txt'
+      - 'setup.py'
+      - '.github/workflows/ci.yml'
 
 jobs:
-  build-and-test:
-    # Use a recent Ubuntu version
-    runs-on: ubuntu-latest
+  build:
+    runs-on: ubuntu-latest # Use a standard runner OS
+
+    strategy:
+      matrix:
+        python-version: ['3.9', '3.10', '3.11'] # Test with different Python versions
 
     steps:
     - name: Checkout code
-      # Use v4 for checking out code
       uses: actions/checkout@v4
 
-    - name: Set up Python
-      # Use v5 for setting up Python
+    - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
       with:
-        # Use a specific, stable Python version known to work well with Qiskit 1.0+
-        python-version: '3.10'
-        # Enable pip caching - potentially useful if the cache itself isn't the problem
+        python-version: ${{ matrix.python-version }}
+        # Optional: Use a dependency cache for faster builds
         cache: 'pip'
+        cache-dependency-path: requirements.txt # Cache based on requirements.txt
 
-    # --- Enhanced Virtual Environment Setup and Usage ---
-
-    - name: Clean existing virtual environment directory (Aggressive)
-      # Forcefully remove the .venv directory if it exists from a previous run attempt
-      # This ensures a completely fresh virtual environment creation
-      run: rm -rf .venv
-
-    - name: Create Virtual Environment
-      # Create the venv using the python executable set up by actions/setup-python.
-      run: python -m venv .venv
-
-    - name: Upgrade pip in Virtual Environment
-      # Explicitly upgrade pip within the newly created virtual environment
-      run: ./.venv/bin/python -m pip install --upgrade pip
-
-    - name: Clear pip cache (Recommended)
-      # Clear the pip cache using the venv's pip.
-      # This helps prevent old or conflicting packages from being used from the cache.
-      run: ./.venv/bin/python -m pip cache purge
-
-    # --- Aggressive Cleanup of Potential Conflicting Qiskit Packages ---
-    # This step attempts to uninstall older Qiskit packages just in case they are present
-    # Use --yes to avoid prompts and continue on errors if packages aren't found
-    # Run this using the venv's python
-    - name: Attempt to uninstall conflicting Qiskit packages
+    - name: Install dependencies
       run: |
-        ./.venv/bin/python -m pip uninstall qiskit qiskit-terra qiskit-aer --yes || true
+        python -m pip install --upgrade pip
+        # Install core dependencies from requirements.txt
+        pip install -r requirements.txt
+        # Install test dependencies (assuming you have extras_require['test'] in setup.py)
+        pip install .[test]
 
-    # --- End Aggressive Cleanup ---
-
-
-    - name: Install dependencies into Virtual Environment
-      # Install everything from your requirements.txt file explicitly into the venv
-      # This should install Qiskit >= 1.0 and Qiskit Aer >= 0.13
-      run: ./.venv/bin/python -m pip install -r requirements.txt
-
-
-    - name: Install package into Virtual Environment
-      # Install your package itself (in editable mode is common for testing)
-      # explicitly into the venv
-      run: ./.venv/bin/python -m pip install .
-
-
-    - name: Run tests using Virtual Environment's pytest
-      # Now run tests explicitly using the pytest executable within the venv
-      # We use .venv/bin/python -m pytest for robustness
-      run: ./.venv/bin/python -m pytest
-
-    # Optional: Add linting or formatting checks (uncomment if you want them)
-    # These would also need to be installed into the venv and run using .venv/bin/
-    # - name: Install Linter (flake8) into Virtual Environment
-    #   run: ./.venv/bin/python -m pip install flake8
-    # - name: Run Linter
-    #   run: ./.venv/bin/flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-
+    - name: Run tests with pytest
+      run: |
+        pytest -v # -v for verbose output
