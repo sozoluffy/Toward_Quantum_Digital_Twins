@@ -14,5 +14,5 @@ PyYAML>=5.4
 matplotlib>=3.5
 
 # Optional: For Development/Testing
-# pytest>=7.0
-# flake8>=5.0
+pytest>=7.0  # Uncommented pytest
+# flake8>=5.0 # Keep flake8 commented unless you want linting in CI

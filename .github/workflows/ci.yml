@@ -31,17 +31,17 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    # Optional: Add a step to install your package itself if needed for testing
-    # This is useful if your tests rely on the package being installed
-    # - name: Install package
-    #   run: pip install .
+    # Add a step to install your package itself
+    # This is necessary for imports like 'from noise.reset_error import ...' to work correctly
+    - name: Install package
+      run: pip install .
 
     - name: Run tests
-      # Use pytest to run your test suite
+      # Use python -m pytest to run your test suite
       run: |
-        pytest
+        python -m pytest
 
-    # Optional: Add linting or formatting checks
+    # Optional: Add linting or formatting checks (uncomment if you want them)
     # - name: Run linter (flake8)
     #   run: |
     #     # Install flake8 if not in requirements.txt
