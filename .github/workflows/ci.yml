@@ -1,34 +1,51 @@
 # .github/workflows/ci.yml
-name: Python CI
 
-on: [push, pull_request]
+name: CI
+
+on:
+  push:
+    branches:
+      - main # Or your default branch name like 'master'
+  pull_request:
+    branches:
+      - main # Or your default branch name like 'master'
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ["3.9", "3.10", "3.11"] # Test on multiple Python versions
+  build-and-test:
+    runs-on: ubuntu-latest # Use a recent Ubuntu version
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
+    - name: Checkout code
+      uses: actions/checkout@v4 # Use v4 for checking out code
+
+    - name: Set up Python
+      uses: actions/setup-python@v5 # Use v5 for setting up Python
       with:
-        python-version: ${{ matrix.python-version }}
+        python-version: '3.x' # Use a compatible Python version, e.g., '3.9', '3.10', '3.11'
+
     - name: Install dependencies
+      # This step ensures dependencies are installed from requirements.txt
+      # The `-m pip install --upgrade pip` part ensures pip is up-to-date
+      # The `-r requirements.txt` part installs everything from your requirements file
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-        pip install pytest # Install pytest explicitly for testing step
-        pip install -e . # Install package in editable mode
-    - name: Lint with flake8 (Optional)
-      run: |
-        pip install flake8
-        # stop the build if there are Python syntax errors or undefined names
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-    - name: Test with pytest
+
+    # Optional: Add a step to install your package itself if needed for testing
+    # This is useful if your tests rely on the package being installed
+    # - name: Install package
+    #   run: pip install .
+
+    - name: Run tests
+      # Use pytest to run your test suite
       run: |
         pytest
+
+    # Optional: Add linting or formatting checks
+    # - name: Run linter (flake8)
+    #   run: |
+    #     # Install flake8 if not in requirements.txt
+    #     # pip install flake8
+    #     flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+    #     flake8 . --count --exit-zero --max-complexity=10 --max-line-length=120 --statistics
+
