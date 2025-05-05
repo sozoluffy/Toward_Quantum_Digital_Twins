@@ -18,32 +18,68 @@ The goal is to emulate the behavior of a specific quantum device by incorporatin
 
 ## Installation
 
+This project requires **Python 3.8 or later**.
+
+It is **strongly recommended** to install the project in a dedicated virtual environment to avoid dependency conflicts with other Python projects you might have, especially if you have worked with older versions of Qiskit previously. You can use `venv` (built into Python) or Conda.
+
+**Using `venv` (Recommended):**
+
 1.  **Clone the repository:**
     ```bash
-    git clone https://github.com/sozoluffy/Toward_Quantum_Digital_Twins.git
+    git clone [https://github.com/sozoluffy/Toward_Quantum_Digital_Twins.git](https://github.com/sozoluffy/Toward_Quantum_Digital_Twins.git)
     cd Toward_Quantum_Digital_Twins
     ```
 
-2.  **Create a Conda Environment (Recommended):**
+2.  **Create and activate a virtual environment:**
     ```bash
-    conda create --name qdt_env python=3.9 -y
+    python3 -m venv .venv
+    source .venv/bin/activate # On Linux/macOS
+    # .venv\Scripts\activate   # On Windows (PowerShell)
+    ```
+
+3.  **Install Dependencies:**
+
+    * **For Users:** If you just want to use the project:
+        ```bash
+        pip install -r requirements.txt
+        ```
+    * **For Developers:** If you plan to contribute or run the tests:
+        ```bash
+        pip install -e .[test]
+        ```
+        This installs the project in editable mode and includes the necessary dependencies for running tests (like `pytest`).
+
+**Using Conda:**
+
+1.  **Clone the repository:**
+    ```bash
+    git clone [https://github.com/sozoluffy/Toward_Quantum_Digital_Twins.git](https://github.com/sozoluffy/Toward_Quantum_Digital_Twins.git)
+    cd Toward_Quantum_Digital_Twins
+    ```
+
+2.  **Create and activate a Conda environment:**
+    ```bash
+    conda create --name qdt_env python=3.9 -y # Or your preferred Python version 3.8+
     conda activate qdt_env
     ```
 
 3.  **Install Dependencies:**
-    ```bash
-    pip install -r requirements.txt
-    ```
-    Alternatively, for development:
-    ```bash
-    pip install -e .[test] # Assuming test extras are defined in setup.py if needed
-    ```
+
+    * **For Users:**
+        ```bash
+        pip install -r requirements.txt
+        ```
+    * **For Developers:**
+        ```bash
+        pip install -e .[test]
+        ```
 
 ## Configuration (`calibration/device_calib.yaml`)
 
 The simulation relies on a YAML configuration file specifying the target device's properties. An example based on synthetic data (`device_calib.yaml`) is provided. You should replace this with data for your target device.
 
 Key sections:
+
 * `dt`: Backend time resolution in seconds (required for durations).
 * `basis_gates`: List of native gate names supported.
 * `coupling_map`: List of connected qubit pairs, e.g., `[[0, 1], [1, 2]]`.
@@ -94,5 +130,6 @@ Key sections:
 ## Testing
 
 Run unit tests using pytest from the project root directory:
+
 ```bash
 pytest
