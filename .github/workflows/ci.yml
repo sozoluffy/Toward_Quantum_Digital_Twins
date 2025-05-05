@@ -27,9 +27,8 @@ jobs:
         # Use a specific, compatible Python version.
         # Qiskit >= 1.0 requires Python 3.8+. Let's use 3.11 as it's common and stable.
         python-version: '3.11'
-        # We will manually manage the virtual environment and dependencies,
-        # so we don't need setup-python to install packages into the global env.
-        cache: 'pip' # Enable pip caching
+        # Enable pip caching
+        cache: 'pip'
 
     # --- Explicit Virtual Environment Setup and Usage ---
 
@@ -41,12 +40,22 @@ jobs:
       # Explicitly upgrade pip within the newly created virtual environment
       run: ./.venv/bin/python -m pip install --upgrade pip
 
-    - name: Clear pip cache (Optional but Recommended for Isolation Issues)
+    - name: Clear pip cache (Recommended)
       # Clear the pip cache to ensure we're not using potentially conflicting cached packages
       # This command needs to be run using the venv's python or pip
       run: ./.venv/bin/python -m pip cache purge
-      # Alternatively, you could try deleting the cache directory manually if purge doesn't work
-      # run: rm -rf ~/.cache/pip
+
+    # --- Aggressive Cleanup of Potential Conflicting Qiskit Packages ---
+    # This step attempts to uninstall older Qiskit packages just in case they are present
+    # Use --yes to avoid prompts and continue on errors if packages aren't found
+    - name: Attempt to uninstall conflicting Qiskit packages
+      run: |
+        ./.venv/bin/python -m pip uninstall qiskit qiskit-terra qiskit-aer --yes || true
+      # The '|| true' ensures that the workflow doesn't fail if these packages aren't found,
+      # as they might not be present in a clean environment.
+
+    # --- End Aggressive Cleanup ---
+
 
     - name: Install dependencies into Virtual Environment
       # Install everything from your requirements file explicitly into the venv
