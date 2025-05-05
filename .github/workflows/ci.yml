@@ -24,58 +24,40 @@ jobs:
         # Use a compatible Python version. Python 3.8+ is required for Qiskit >= 1.0
         python-version: '3.x' # This will pick the latest 3.x available, typically 3.11 or 3.12
 
-    # --- Add steps to create and activate a virtual environment ---
+    # --- Steps to create a virtual environment ---
+    # We create the venv, but subsequent steps will explicitly use its python/pip
     - name: Create Virtual Environment
       run: python -m venv .venv
-
-    - name: Activate Virtual Environment
-      # This step makes the virtual environment active for subsequent run steps
-      # The syntax depends on the shell, but this works for bash which is common on ubuntu-latest
-      run: |
-        source .venv/bin/activate
-        # The 'run' block executes commands in a new shell.
-        # To ensure subsequent steps use the activated venv, we need to set up the shell.
-        # This is handled by the 'shell' property or by repeating activation if needed,
-        # but 'actions/setup-python' and standard 'run' blocks often manage this.
-        # Let's rely on the standard setup first.
 
     # --- End Virtual Environment Setup ---
 
 
     - name: Install dependencies
-      # Now install dependencies INTO the activated virtual environment
+      # Now install dependencies explicitly using the venv's pip
       run: |
         # Ensure pip is up-to-date within the venv
-        python -m pip install --upgrade pip
+        .venv/bin/python -m pip install --upgrade pip
         # Install everything from your requirements file into the venv
-        pip install -r requirements.txt
-      # Ensure this step runs within the activated shell if needed,
-      # but actions/setup-python often configures the shell correctly.
+        .venv/bin/python -m pip install -r requirements.txt
 
 
     # Install your package itself into the virtual environment
     - name: Install package
       run: |
-        # Ensure the venv is active (redundant but safe check)
-        source .venv/bin/activate
         # Install the package in editable mode (optional, but common for testing)
-        pip install .
+        .venv/bin/python -m pip install .
+
 
     - name: Run tests
-      # Now run tests using pytest from within the virtual environment
+      # Now run tests explicitly using the venv's pytest executable
       run: |
-        # Ensure the venv is active (redundant but safe check)
-        source .venv/bin/activate
-        # Use python -m pytest to run your test suite
-        python -m pytest
+        .venv/bin/python -m pytest
 
     # Optional: Add linting or formatting checks (uncomment if you want them)
-    # These would also need to be installed into the venv
+    # These would also need to be installed into the venv and run using .venv/bin/
     # - name: Run linter (flake8)
     #   run: |
-    #     source .venv/bin/activate # Activate venv
-    #     # Install flake8 if not in requirements.txt
-    #     # pip install flake8
-    #     flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-    #     flake8 . --count --exit-zero --max-complexity=10 --max-line-length=120 --statistics
+    #     .venv/bin/python -m pip install flake8 # Install flake8 into venv
+    #     .venv/bin/flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+    #     .venv/bin/flake8 . --count --exit-zero --max-complexity=10 --max-line-length=120 --statistics
 
