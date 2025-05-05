@@ -12,52 +12,62 @@ on:
 
 jobs:
   build-and-test:
-    runs-on: ubuntu-latest # Use a recent Ubuntu version
+    # Use a recent Ubuntu version
+    runs-on: ubuntu-latest
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4 # Use v4 for checking out code
+      # Use v4 for checking out code
+      uses: actions/checkout@v4
 
     - name: Set up Python
-      uses: actions/setup-python@v5 # Use v5 for setting up Python
+      # Use v5 for setting up Python
+      uses: actions/setup-python@v5
       with:
-        # Use a compatible Python version. Python 3.8+ is required for Qiskit >= 1.0
-        python-version: '3.x' # This will pick the latest 3.x available, typically 3.11 or 3.12
+        # Use a specific, compatible Python version.
+        # Qiskit >= 1.0 requires Python 3.8+. Let's use 3.11 as it's common and stable.
+        python-version: '3.11'
+        # We will manually manage the virtual environment and dependencies,
+        # so we don't need setup-python to install packages into the global env.
+        cache: 'pip' # Enable pip caching
 
-    # --- Steps to create a virtual environment ---
-    # We create the venv, but subsequent steps will explicitly use its python/pip
+    # --- Explicit Virtual Environment Setup and Usage ---
+
     - name: Create Virtual Environment
+      # Create the venv. This uses the python executable set up by actions/setup-python.
       run: python -m venv .venv
 
-    # --- End Virtual Environment Setup ---
+    - name: Upgrade pip in Virtual Environment
+      # Explicitly upgrade pip within the newly created virtual environment
+      run: ./.venv/bin/python -m pip install --upgrade pip
+
+    - name: Clear pip cache (Optional but Recommended for Isolation Issues)
+      # Clear the pip cache to ensure we're not using potentially conflicting cached packages
+      # This command needs to be run using the venv's python or pip
+      run: ./.venv/bin/python -m pip cache purge
+      # Alternatively, you could try deleting the cache directory manually if purge doesn't work
+      # run: rm -rf ~/.cache/pip
+
+    - name: Install dependencies into Virtual Environment
+      # Install everything from your requirements file explicitly into the venv
+      run: ./.venv/bin/python -m pip install -r requirements.txt
 
 
-    - name: Install dependencies
-      # Now install dependencies explicitly using the venv's pip
-      run: |
-        # Ensure pip is up-to-date within the venv
-        .venv/bin/python -m pip install --upgrade pip
-        # Install everything from your requirements file into the venv
-        .venv/bin/python -m pip install -r requirements.txt
+    - name: Install package into Virtual Environment
+      # Install your package itself (in editable mode is common for testing)
+      # explicitly into the venv
+      run: ./.venv/bin/python -m pip install .
 
 
-    # Install your package itself into the virtual environment
-    - name: Install package
-      run: |
-        # Install the package in editable mode (optional, but common for testing)
-        .venv/bin/python -m pip install .
-
-
-    - name: Run tests
-      # Now run tests explicitly using the venv's pytest executable
-      run: |
-        .venv/bin/python -m pytest
+    - name: Run tests using Virtual Environment's pytest
+      # Now run tests explicitly using the pytest executable within the venv
+      # We use .venv/bin/python -m pytest for robustness
+      run: ./.venv/bin/python -m pytest
 
     # Optional: Add linting or formatting checks (uncomment if you want them)
     # These would also need to be installed into the venv and run using .venv/bin/
-    # - name: Run linter (flake8)
-    #   run: |
-    #     .venv/bin/python -m pip install flake8 # Install flake8 into venv
-    #     .venv/bin/flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-    #     .venv/bin/flake8 . --count --exit-zero --max-complexity=10 --max-line-length=120 --statistics
+    # - name: Install Linter (flake8) into Virtual Environment
+    #   run: ./.venv/bin/python -m pip install flake8
+    # - name: Run Linter
+    #   run: ./.venv/bin/flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
 
